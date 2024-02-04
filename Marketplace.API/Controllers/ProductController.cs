@@ -16,7 +16,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Marketplace.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
-//[Authorize]
+[Authorize]
 public class ProductController(IProductService productService, IImageService imageService) : ControllerBase
 {
     private readonly IProductService _productService = productService;
@@ -59,12 +59,12 @@ public class ProductController(IProductService productService, IImageService ima
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        //string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        //if (userId is null)
-        //    return BadRequest(ModelState);
+        if (userId is null)
+            return BadRequest(ModelState);
 
-        var response = await _productService.AddProduct(model, "01241996-fc2a-41ad-90ed-a37a72cf6d1c");
+        var response = await _productService.AddProduct(model, userId);
 
         if (response.Success)
             return Ok(response);
