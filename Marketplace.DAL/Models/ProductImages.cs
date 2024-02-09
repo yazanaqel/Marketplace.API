@@ -9,13 +9,8 @@ using System.Threading.Tasks;
 namespace Marketplace.DAL.Models;
 public class ProductImages
 {
-    public ProductImages() => this.ImageId = Guid.NewGuid();
-    [Key]
-    public Guid ImageId { get; set; }
-    public string OriginalFileName { get; set; }
-    public string OriginalType { get; set; }
-    public byte[] OriginalContent { get; set; }
-    public byte[] ThumbnailContent { get; set; }
+    public Guid Id { get; set; }
+    public required string Folder { get; set; }
 
 
     [ForeignKey(nameof(ProductId))]

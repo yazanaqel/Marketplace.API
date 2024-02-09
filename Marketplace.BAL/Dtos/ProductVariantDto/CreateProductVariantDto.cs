@@ -6,13 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Marketplace.DAL.Dtos.ProductVariantDto;
-public class AddProductVariantDto
+public class CreateProductVariantDto
 {
     [Required, MaxLength(15)]
     public required string VariantName { get; set; }
     public string[]? VariantImages { get; set; }
-
-    [Required]
-    public required int AttributeId { get; set; }
 
 }

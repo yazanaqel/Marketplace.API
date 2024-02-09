@@ -24,7 +24,7 @@ public class UserService(UserManager<ApplicationUser> userManager, IOptions<Help
         {
             if (await _userManager.FindByEmailAsync(model.Email) is not null)
             {
-                serviceResponse.Message = $"This Email {model.Email} Is Taken";
+                serviceResponse.Message = CustomConstants.User.EmailIsTaken;
                 return serviceResponse;
             }
 
@@ -60,10 +60,10 @@ public class UserService(UserManager<ApplicationUser> userManager, IOptions<Help
         catch (Exception e)
         {
             Console.WriteLine(e.Message);
-            return null;
+            
         }
 
-        serviceResponse.Message = "User Created Successfuly";
+        serviceResponse.Message = CustomConstants.User.UserCreated;
         serviceResponse.Success = true;
 
         return serviceResponse;
@@ -80,7 +80,7 @@ public class UserService(UserManager<ApplicationUser> userManager, IOptions<Help
 
             if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                serviceResponse.Message = "Incorrect Email Or Password";
+                serviceResponse.Message = CustomConstants.User.Incorrect;
                 return serviceResponse;
             }
 
@@ -92,10 +92,10 @@ public class UserService(UserManager<ApplicationUser> userManager, IOptions<Help
         catch (Exception e)
         {
             Console.WriteLine(e.Message);
-            return null;
+            
         }
 
-        serviceResponse.Message = "User Login Successfuly";
+        serviceResponse.Message = CustomConstants.User.UserLogin;
         serviceResponse.Success = true;
 
         return serviceResponse;

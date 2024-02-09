@@ -1,30 +1,18 @@
-﻿using Marketplace.BAL.Services.ProductService;
-using Marketplace.DAL.Dtos.UserDtos;
-using Marketplace.DAL;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Marketplace.DAL.Dtos.ProductDtos;
-using Marketplace.DAL.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
-using Microsoft.AspNetCore;
-using Microsoft.Net.Http.Headers;
-using Marketplace.BAL.Services.ImageService;
-using System.ComponentModel.DataAnnotations;
+﻿using Marketplace.BAL.Services;
 
 namespace Marketplace.API.Controllers;
+
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class ProductController(IProductService productService, IImageService imageService) : ControllerBase
+public class ProductController(IProductService productService, IImageService imageService) : BaseController
 {
     private readonly IProductService _productService = productService;
 
     [HttpGet("GetAllUserProducts")]
     public async Task<ActionResult<ServiceResponse<ProductResponseDto>>> GetAllUserProducts(string? sortColumn, string? sortOrder, string? searchItem, int page = 1, int pageSize = 5)
     {
-        string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        string? userId = GetUserId();
 
         if (userId is null)
             return BadRequest(ModelState);
@@ -34,13 +22,14 @@ public class ProductController(IProductService productService, IImageService ima
         if (response.Success)
             return Ok(response);
 
-        return BadRequest(response.Message);
+        return NotFound(response.Message);
     }
 
     [HttpGet("GetUserProductById")]
     public async Task<ActionResult<ServiceResponse<ProductResponseDto>>> GetUserProductById([Required] int productId)
     {
-        string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        string? userId = GetUserId();
 
         if (userId is null)
             return BadRequest(ModelState);
@@ -50,36 +39,36 @@ public class ProductController(IProductService productService, IImageService ima
         if (response.Success)
             return Ok(response);
 
-        return BadRequest(response.Message);
+        return NotFound(response.Message);
     }
 
-    [HttpPost("AddProduct")]
-    public async Task<ActionResult<ServiceResponse<ProductResponseDto>>> AddProduct(AddProductDto model)
+    [HttpPost("CreateProduct")]
+    public async Task<ActionResult<ServiceResponse<ProductResponseDto>>> CreateProduct([FromForm] CreateProductDto model)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        string? userId = GetUserId();
 
         if (userId is null)
             return BadRequest(ModelState);
 
-        var response = await _productService.AddProduct(model, userId);
+        var response = await _productService.CreateProduct(model, userId);
 
         if (response.Success)
-            return Ok(response);
+            return Created(response.Message, response);
 
         return BadRequest(response.Message);
     }
 
 
     [HttpPut("UpdateProduct")]
-    public async Task<ActionResult<ServiceResponse<ProductResponseDto>>> UpdateProduct(UpdateProductDto model)
+    public async Task<ActionResult<ServiceResponse<ProductResponseDto>>> UpdateProduct([FromForm] UpdateProductDto model)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        string? userId = GetUserId();
 
         if (userId is null)
             return BadRequest(ModelState);
@@ -89,7 +78,7 @@ public class ProductController(IProductService productService, IImageService ima
         if (response.Success)
             return Ok(response);
 
-        return BadRequest(response.Message);
+        return NotFound(response.Message);
     }
 
 
@@ -101,7 +90,7 @@ public class ProductController(IProductService productService, IImageService ima
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        string? userId = GetUserId();
 
         if (userId is null)
             return BadRequest(ModelState);
@@ -109,9 +98,9 @@ public class ProductController(IProductService productService, IImageService ima
         var response = await _productService.DeleteProduct(productId, userId);
 
         if (response.Success)
-            return Ok(response);
+            return NoContent();
 
-        return BadRequest(response.Message);
+        return NotFound(response.Message);
     }
 
 }

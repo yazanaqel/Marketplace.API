@@ -24,6 +24,6 @@ public class Product
     public virtual ApplicationUser User { get; set; }
     public string UserId { get; set; } = string.Empty;
     [JsonIgnore]
-    public virtual List<DAL.Models.Attribute>? Attributes { get; set; }
-    public virtual List<ProductImages>? ProductImages { get; set; }
+    public virtual ICollection<ProductAttribute>? ProductAttributes { get; set; }
+    public virtual ICollection<ProductImages>? ProductImages { get; set; }
 }

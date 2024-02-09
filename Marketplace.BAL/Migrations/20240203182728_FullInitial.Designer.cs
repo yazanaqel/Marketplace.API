@@ -116,7 +116,7 @@ namespace Marketplace.BAL.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Attributes");
+                    b.ToTable("ProductAttributes");
                 });
 
             modelBuilder.Entity("Marketplace.DAL.Models.Product", b =>
@@ -344,7 +344,7 @@ namespace Marketplace.BAL.Migrations
             modelBuilder.Entity("Marketplace.DAL.Models.Attribute", b =>
                 {
                     b.HasOne("Marketplace.DAL.Models.Product", "Product")
-                        .WithMany("Attributes")
+                        .WithMany("ProductAttributes")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -443,7 +443,7 @@ namespace Marketplace.BAL.Migrations
 
             modelBuilder.Entity("Marketplace.DAL.Models.Product", b =>
                 {
-                    b.Navigation("Attributes");
+                    b.Navigation("ProductAttributes");
 
                     b.Navigation("ProductImages");
                 });

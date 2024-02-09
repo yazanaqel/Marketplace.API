@@ -35,7 +35,7 @@ namespace Marketplace.BAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Attributes",
+                name: "ProductAttributes",
                 columns: table => new
                 {
                     AttributeId = table.Column<int>(type: "int", nullable: false)
@@ -45,9 +45,9 @@ namespace Marketplace.BAL.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Attributes", x => x.AttributeId);
+                    table.PrimaryKey("PK_ProductAttributes", x => x.AttributeId);
                     table.ForeignKey(
-                        name: "FK_Attributes_Products_ProductId",
+                        name: "FK_ProductAttributes_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "ProductId",
@@ -90,16 +90,16 @@ namespace Marketplace.BAL.Migrations
                 {
                     table.PrimaryKey("PK_ProductVariants", x => x.VariantId);
                     table.ForeignKey(
-                        name: "FK_ProductVariants_Attributes_AttributeId",
+                        name: "FK_ProductVariants_ProductAttributes_AttributeId",
                         column: x => x.AttributeId,
-                        principalTable: "Attributes",
+                        principalTable: "ProductAttributes",
                         principalColumn: "AttributeId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Attributes_ProductId",
-                table: "Attributes",
+                name: "IX_ProductAttributes_ProductId",
+                table: "ProductAttributes",
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
@@ -128,7 +128,7 @@ namespace Marketplace.BAL.Migrations
                 name: "ProductVariants");
 
             migrationBuilder.DropTable(
-                name: "Attributes");
+                name: "ProductAttributes");
 
             migrationBuilder.DropTable(
                 name: "Products");

@@ -1,16 +1,16 @@
 ﻿using Marketplace.DAL.Dtos.ProductDtos;
-using Marketplace.DAL;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
-using Marketplace.BAL.Services.ImageService;
 using Marketplace.BAL.Services.ProductService;
+using Marketplace.BAL.Services;
 
 namespace Marketplace.API.Controllers;
-public class HomeController(IProductService productService, IImageService imageService) : Controller
+
+[Route("api/[controller]")]
+[ApiController]
+public class HomeController(IProductService productService) : Controller
 {
     private readonly IProductService _productService = productService;
-    private readonly IImageService _imageService = imageService;
 
     [HttpGet("GetAllProducts")]
     public async Task<ActionResult<ServiceResponse<ProductResponseDto>>> GetAllProducts(string? sortColumn, string? sortOrder, string? searchItem, int page = 1, int pageSize = 5)
@@ -21,17 +21,19 @@ public class HomeController(IProductService productService, IImageService imageS
         if (response.Success)
             return Ok(response);
 
-        return BadRequest(response.Message);
+        return NotFound(response.Message);
     }
 
-    [HttpGet("GetThumbnail")] // insert the image id here to display it
-    public async Task<IActionResult> GetThumbnail([Required] string id)
+
+    [HttpGet("GetProductDetails")]
+    public async Task<ActionResult<ServiceResponse<ProductResponseDto>>> GetProductDetails([Required] int productId)
     {
-        var image = File(await _imageService.GetThumbnail(id), "image/jpeg");
 
-        if (image is null)
-            return NotFound();
+        var response = await _productService.GetProductDetails(productId);
 
-        return image;
+        if (response.Success)
+            return Ok(response);
+
+        return NotFound(response.Message);
     }
 }

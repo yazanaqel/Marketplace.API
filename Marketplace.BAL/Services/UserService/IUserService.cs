@@ -1,5 +1,4 @@
-﻿using Marketplace.DAL;
-using Marketplace.DAL.Dtos.UserDtos;
+﻿using Marketplace.DAL.Dtos.UserDtos;
 
 namespace Marketplace.BAL.Services.UserService;
 public interface IUserService

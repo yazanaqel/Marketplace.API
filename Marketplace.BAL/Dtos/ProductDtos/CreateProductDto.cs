@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Marketplace.DAL.Dtos.AttributeDto;
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
 namespace Marketplace.DAL.Dtos.ProductDtos;
-public class AddProductDto
+public class CreateProductDto
 {
     [Required,MaxLength(15)]
     public required string ProductName { get; set; }
@@ -12,5 +13,6 @@ public class AddProductDto
     [MaxLength(50)]
     public string? Description { get; set; }
     public IFormFile[]? Images { get; set; }
+    public ICollection<CreateAttributeDto>? ProductAttributesList { get; set; }
 
 }

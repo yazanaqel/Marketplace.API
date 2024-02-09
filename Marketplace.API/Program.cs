@@ -1,19 +1,24 @@
+global using Microsoft.EntityFrameworkCore;
+global using Marketplace.BAL.Services.AttributeService;
+global using Marketplace.DAL;
+global using System.ComponentModel.DataAnnotations;
+global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.AspNetCore.Mvc;
+global using Marketplace.DAL.Dtos.ProductDtos;
+global using Marketplace.BAL.Services.ProductVariantService;
+global using Marketplace.BAL.Services.UserService;
+global using Marketplace.BAL.Services.ImageService;
+global using Marketplace.BAL.Services.ProductService;
 using Marketplace.BAL.DbContext;
-using Marketplace.BAL.Services.AttributeService;
-using Marketplace.BAL.Services.ImageService;
-using Marketplace.BAL.Services.ProductService;
-using Marketplace.BAL.Services.ProductVariantService;
-using Marketplace.BAL.Services.UserService;
-using Marketplace.DAL;
 using Marketplace.DAL.Models;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Filters;
 using System.Text;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,12 +69,23 @@ builder.Services.AddAuthentication(options =>
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    {
+        Description = """Standard Authorization header using the Bearer scheme. Example: "bearer {token}" """,
+        In = ParameterLocation.Header,
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey
+    });
+
+    c.OperationFilter<SecurityRequirementsOperationFilter>();
+});
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAttributeService, AttributeService>();
-builder.Services.AddScoped<IProductVariantService, ProductVariantService>();
+builder.Services.AddScoped<IVariantService, VariantService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 
 var app = builder.Build();

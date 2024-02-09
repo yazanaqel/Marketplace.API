@@ -1,16 +1,5 @@
-﻿using Azure;
-using Marketplace.BAL.DbContext;
-using Marketplace.BAL.Services.ProductService;
-using Marketplace.DAL.Models;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using SixLabors.ImageSharp.Formats.Jpeg;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Marketplace.BAL.Services.ImageService;
 public class ImageService(IServiceScopeFactory serviceScopeFactory, ApplicationDbContext dbContext) : IImageService
@@ -20,16 +9,26 @@ public class ImageService(IServiceScopeFactory serviceScopeFactory, ApplicationD
     private const int thumbnailWidth = 300;
 
 
-    public async Task<List<string>> GetAllProductImagesIds(int productId)
+    public Task<List<string>> GetAllProductImagesPaths(int productId)
     {
-        return await _dbContext
-            .ProductImages.Where(id => id.ProductId.Equals(productId))
-            .Select(x => x.ImageId.ToString())
-            .ToListAsync();
+        IQueryable<ProductImages> paths = _dbContext
+            .ProductImages
+            .Where(x => x.ProductId == productId);
+
+        if (paths.Any())
+        {
+            return paths.Select(x => x.Folder + "Thumbnail_" + x.Id + ".jpg").ToListAsync();
+        }
+        else
+        {
+            return Task.FromResult(new List<string>());
+        }
     }
 
-    public async Task Process(IEnumerable<ImageInputModel> images, int productId)
+    public async Task Process(IEnumerable<ImageDto> images, int productId)
     {
+
+        var totalImages = await _dbContext.ProductImages.CountAsync();
 
         var tasks = images
             .Select(image => Task.Run(async () =>
@@ -38,40 +37,46 @@ public class ImageService(IServiceScopeFactory serviceScopeFactory, ApplicationD
                 {
                     using var imageResult = await Image.LoadAsync(image.Content);
 
-                    var original = await SaveImage(imageResult, imageResult.Width);
-                    var thumbnail = await SaveImage(imageResult, thumbnailWidth);
+                    var id = Guid.NewGuid();
+                    var path = $"/images/{totalImages % 1000}/";
+                    var name = $"{id}.jpg";
+                    var storagePath = Path.Combine(
+                        Directory.GetCurrentDirectory(), $"wwwroot{path}".Replace("/", "\\"));
+
+                    if (!Directory.Exists(storagePath))
+                    {
+                        Directory.CreateDirectory(storagePath);
+                    }
+
+                    await SaveImage(imageResult, $"Thumbnail_{name}", storagePath, thumbnailWidth);
 
                     var data = _serviceScopeFactory
-                    .CreateScope()
-                    .ServiceProvider
-                    .GetRequiredService<ApplicationDbContext>();
+                        .CreateScope()
+                        .ServiceProvider
+                        .GetRequiredService<ApplicationDbContext>();
 
                     data.ProductImages.Add(new ProductImages
                     {
-                        OriginalFileName = image.Name,
-                        OriginalType = image.Type,
-                        OriginalContent = original,
-                        ThumbnailContent = thumbnail,
-                        ProductId = productId
+                        Id = id,
+                        Folder = path,
+                        ProductId = productId,
                     });
 
                     await data.SaveChangesAsync();
                 }
-                catch (Exception e)
+                catch
                 {
-                    Console.WriteLine(e.Message);
+                    //loger info
                 }
 
             }))
             .ToList();
 
+
+
         await Task.WhenAll(tasks);
     }
-
-    public Task<Stream> GetThumbnail(string id)
-        => GetImageData(id, "Thumbnail");
-
-    private async Task<byte[]> SaveImage(Image image, int resizeWidth)
+    private async Task SaveImage(Image image, string name, string path, int resizeWidth)
     {
         var width = image.Width;
         var height = image.Height;
@@ -86,38 +91,10 @@ public class ImageService(IServiceScopeFactory serviceScopeFactory, ApplicationD
 
         image.Metadata.ExifProfile = null;
 
-        var memoryStream = new MemoryStream();
-
-        await image.SaveAsJpegAsync(memoryStream, new JpegEncoder
+        await image.SaveAsJpegAsync($"{path}/{name}", new JpegEncoder
         {
             Quality = 75
         });
 
-        return memoryStream.ToArray();
-
-    }
-
-    private async Task<Stream> GetImageData(string id, string size)
-    {
-        var database = _dbContext.Database;
-
-        var dbconnection = (SqlConnection)database.GetDbConnection();
-
-        var command = new SqlCommand(
-            $"SELECT {size}Content FROM ProductImages WHERE Id=@id"
-            , dbconnection);
-
-        command.Parameters.Add(new SqlParameter("@id", id));
-        dbconnection.Open();
-        var reader = await command.ExecuteReaderAsync();
-        Stream result = null;
-        if (reader.HasRows)
-        {
-            while (reader.Read()) result = reader.GetStream(0);
-        }
-
-        reader.Close();
-
-        return result;
     }
 }

@@ -1,12 +1,5 @@
-﻿using Marketplace.BAL.Services.UserService;
-using Marketplace.DAL;
+﻿using Marketplace.BAL.Services;
 using Marketplace.DAL.Dtos.UserDtos;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Marketplace.API.Controllers;
 [Route("api/[controller]")]
@@ -24,11 +17,11 @@ public class UserController(IUserService userService) : ControllerBase
         var response = await _userService.RegisterAsync(model);
 
         if (response.Success)
-            return Ok(response);
+            return Created(response.Message, response.Data);
 
         return BadRequest(response.Message);
     }
-    
+
     [HttpPost("Login")]
     public async Task<ActionResult<ServiceResponse<UserResponseDto>>> Login(LoginUserDto model)
     {
@@ -37,10 +30,10 @@ public class UserController(IUserService userService) : ControllerBase
 
         var response = await _userService.LoginAsync(model);
 
-        if(response.Success)
+        if (response.Success)
             return Ok(response);
 
-        return BadRequest(response.Message);
+        return NotFound(response.Message);
     }
 
 

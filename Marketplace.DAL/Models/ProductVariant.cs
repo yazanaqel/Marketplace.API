@@ -16,6 +16,6 @@ public class ProductVariant
     public string[]? VariantImages { get; set; }
 
     [ForeignKey(nameof(AttributeId))]
-    public virtual Attribute? Attribute { get; set; }
-    public required int AttributeId { get; set; }
+    public virtual ProductAttribute? Attribute { get; set; }
+    public int AttributeId { get; set; }
 }
