@@ -5,12 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Marketplace.DAL.Dtos.ProductVariantDto;
+namespace Marketplace.BAL.Dtos.ProductVariantDto;
 public class UpdateProductVariantDto
 {
     public int VariantId { get; set; }
 
-    [MaxLength(15)]
-    public string VariantName { get; set; } = "Variant Without Name";
+    [Required, MaxLength(15)]
+    public required string VariantName { get; set; }
     public string[]? VariantImages { get; set; }
 }

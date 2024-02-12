@@ -12,7 +12,7 @@ public class ProductVariant
 {
     [Key]
     public int VariantId { get; set; }
-    public required string VariantName { get; set; } = string.Empty;
+    public string VariantName { get; set; } = string.Empty;
     public string[]? VariantImages { get; set; }
 
     [ForeignKey(nameof(AttributeId))]

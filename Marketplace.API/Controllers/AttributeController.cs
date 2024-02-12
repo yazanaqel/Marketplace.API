@@ -11,17 +11,17 @@ public class AttributeController(IAttributeService attributeService) : BaseContr
     private readonly IAttributeService _attributeService = attributeService;
 
     [HttpDelete("DeleteAttribute")]
-    public async Task<ActionResult<ServiceResponse<ProductResponseDto>>> DeleteAttribute([Required] int attributeId)
+    public async Task<ActionResult<ServiceResponse<ProductsResponseDto>>> DeleteAttribute([Required] int attributeId)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-		string? userId = GetUserId();
+        string? userId = GetUserId();
 
-		if (userId is null)
-			return BadRequest(ModelState);
+        if (string.IsNullOrWhiteSpace(userId))
+            return BadRequest(ModelState);
 
-		var response = await _attributeService.DeleteAttribute(attributeId, userId);
+        var response = await _attributeService.DeleteAttribute(attributeId, userId);
 
         if (response.Success)
             return Ok(response);

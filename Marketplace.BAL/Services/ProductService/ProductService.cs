@@ -1,12 +1,16 @@
-﻿namespace Marketplace.BAL.Services.ProductService;
-public class ProductService(ApplicationDbContext dbContext, IImageService imageService) : IProductService
+﻿using Marketplace.DAL.Models;
+using System.Linq;
+
+namespace Marketplace.BAL.Services.ProductService;
+public class ProductService(ApplicationDbContext dbContext, IImageService imageService, IMapper mapper) : IProductService
 {
     private readonly ApplicationDbContext _dbContext = dbContext;
     private readonly IImageService _imageService = imageService;
+    private readonly IMapper _mapper = mapper;
 
-    public async Task<ServiceResponse<List<ProductsResponseDto>>> GetAllProducts(string? sortColumn, string? sortOrder, string? searchItem, int page, int pageSize)
+    public async Task<ServiceResponse<IReadOnlyList<ProductsResponseDto>>> GetAllProducts(string? sortColumn, string? sortOrder, string? searchItem, int page, int pageSize)
     {
-        ServiceResponse<List<ProductsResponseDto>> serviceResponse = new ServiceResponse<List<ProductsResponseDto>>();
+        ServiceResponse<IReadOnlyList<ProductsResponseDto>> serviceResponse = new ServiceResponse<IReadOnlyList<ProductsResponseDto>>();
 
         try
         {
@@ -24,7 +28,6 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
                     x => x.ProductName.Contains(searchItem));
             }
 
-
             if (sortOrder?.ToLower() == CustomConstants.SortOrder.Descinding.ToLower())
             {
                 productsQuery = productsQuery.OrderByDescending(GetSortProperty(sortColumn));
@@ -36,98 +39,9 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
 
             var products = await productsQuery.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
-            serviceResponse.Data = new List<ProductsResponseDto>();
+            var productsList = products.ConvertAll(product => new ProductsResponseDto(product));
 
-            foreach (var product in products)
-            {
-                var productsResponseDto = new ProductsResponseDto
-                {
-                    ProductId = product.ProductId,
-                    ProductName = product.ProductName,
-                    Price = product.Price,
-                    ProductMainImage = product.ProductMainImage,
-                    Description = product.Description,
-                };
-
-                serviceResponse.Data.Add(productsResponseDto);
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-
-        }
-
-        serviceResponse.Message = CustomConstants.Operation.Successful;
-        serviceResponse.Success = true;
-
-        return serviceResponse;
-
-    }
-    public async Task<ServiceResponse<ProductResponseDto>> GetProductDetails(int productId)
-    {
-
-        ServiceResponse<ProductResponseDto> serviceResponse = new ServiceResponse<ProductResponseDto>();
-
-        try
-        {
-            var product = await _dbContext.Products
-            .Where(product => product.ProductId.Equals(productId))
-            .Include(attribute => attribute.ProductAttributes)
-            .ThenInclude(variant => variant.ProductVariants)
-            .SingleOrDefaultAsync();
-
-
-            if (product is null)
-            {
-                serviceResponse.Message = CustomConstants.NotFound.Product;
-                return serviceResponse;
-            }
-
-            serviceResponse.Data = new ProductResponseDto
-            {
-                ProductId = product.ProductId,
-                ProductName = product.ProductName,
-                Price = product.Price,
-                ProductMainImage = product.ProductMainImage,
-                Description = product.Description,
-                ProductImages = await _imageService.GetAllProductImagesPaths(productId)
-            };
-
-            if (product.ProductAttributes is not null && product.ProductAttributes.Count > 0)
-            {
-                serviceResponse.Data.ProductAttributesList = new List<AttributeResponseDto>();
-
-                foreach (var attribute in product.ProductAttributes)
-                {
-                    var attributeResponseDto = new AttributeResponseDto
-                    {
-                        AttributeId = attribute.AttributeId,
-                        AttributeName = attribute.AttributeName,
-                        ProductId = attribute.ProductId,
-                    };
-
-                    if (attribute.ProductVariants is not null && attribute.ProductVariants.Count > 0)
-                    {
-                        var productVariantResponseDto = new List<ProductVariantResponseDto>();
-
-                        foreach (var variant in attribute.ProductVariants)
-                        {
-                            productVariantResponseDto.Add(new ProductVariantResponseDto
-                            {
-                                VariantId = variant.VariantId,
-                                VariantName = variant.VariantName,
-                                VariantImages = variant.VariantImages,
-                                AttributeId = variant.AttributeId,
-                            });
-                        }
-
-                        attributeResponseDto.ProductVariantList = productVariantResponseDto;
-                    }
-
-                    serviceResponse.Data.ProductAttributesList.Add(attributeResponseDto);
-                }
-            }
+            serviceResponse.Data = productsList.AsReadOnly();
         }
         catch (Exception e)
         {
@@ -138,16 +52,17 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
         serviceResponse.Success = true;
 
         return serviceResponse;
+
     }
-    public async Task<ServiceResponse<List<ProductsResponseDto>>> GetAllUserProducts(string userId, string? sortColumn, string? sortOrder, string? searchItem, int page, int pageSize)
+    public async Task<ServiceResponse<IReadOnlyList<ProductsResponseDto>>> GetAllUserProducts(string userId, string? sortColumn, string? sortOrder, string? searchItem, int page, int pageSize)
     {
-        ServiceResponse<List<ProductsResponseDto>> serviceResponse = new ServiceResponse<List<ProductsResponseDto>>();
+        ServiceResponse<IReadOnlyList<ProductsResponseDto>> serviceResponse = new ServiceResponse<IReadOnlyList<ProductsResponseDto>>();
 
         try
         {
-            IQueryable<Product> productsQuery = _dbContext.Products.Where(product => product.UserId.Equals(userId));
+            IQueryable<Product> productsQuery = _dbContext.Products.Where(product => product.UserId == userId);
 
-            if (!productsQuery.Any())
+            if (!await productsQuery.AnyAsync())
             {
                 serviceResponse.Message = CustomConstants.NotFound.NoProducts;
                 return serviceResponse;
@@ -170,26 +85,10 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
 
             var userProducts = await productsQuery.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
+            var productsList = userProducts.ConvertAll(product => new ProductsResponseDto(product));
 
+            serviceResponse.Data = productsList.AsReadOnly();
 
-            serviceResponse.Data = new List<ProductsResponseDto>();
-
-
-            foreach (var product in userProducts)
-            {
-                var productsResponseDto = new ProductsResponseDto
-                {
-                    ProductId = product.ProductId,
-                    ProductName = product.ProductName,
-                    Price = product.Price,
-                    ProductMainImage = product.ProductMainImage,
-                    Description = product.Description
-                };
-
-                serviceResponse.Data.Add(productsResponseDto);
-            }
-
-            serviceResponse.Data.Skip((page - 1) * pageSize).Take(pageSize).ToList();
         }
         catch (Exception e)
         {
@@ -203,71 +102,61 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
         return serviceResponse;
 
     }
+    public async Task<ServiceResponse<ProductResponseDto>> GetProductDetails(int productId)
+    {
+        ServiceResponse<ProductResponseDto> serviceResponse = new ServiceResponse<ProductResponseDto>();
 
+        try
+        {
+            IQueryable<Product> productQuery = _dbContext.Products
+            .Where(product => product.ProductId == productId)
+            .Include(attribute => attribute.ProductAttributes)
+            .ThenInclude(variant => variant.ProductVariants);
+
+            if (!await productQuery.AnyAsync())
+            {
+                serviceResponse.Message = CustomConstants.NotFound.Product;
+                return serviceResponse;
+            }
+
+            var product = await productQuery.FirstOrDefaultAsync();
+
+            serviceResponse.Data = new ProductResponseDto(product);
+
+            serviceResponse.Data.ProductImages = await _imageService.GetAllProductImagesPaths(productId);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+
+        serviceResponse.Message = CustomConstants.Operation.Successful;
+        serviceResponse.Success = true;
+
+        return serviceResponse;
+    }
     public async Task<ServiceResponse<ProductResponseDto>> GetUserProductById(int productId, string userId)
     {
         ServiceResponse<ProductResponseDto> serviceResponse = new ServiceResponse<ProductResponseDto>();
 
-        var product = await _dbContext.Products
-            .Where(product => product.ProductId.Equals(productId) && product.UserId.Equals(userId))
-            .Include(attribute => attribute.ProductAttributes)
-            .ThenInclude(variant => variant.ProductVariants)
-            .FirstOrDefaultAsync();
-
-
-        if (product is null)
-        {
-            serviceResponse.Message = CustomConstants.NotFound.Product;
-            return serviceResponse;
-        }
-
         try
         {
+            IQueryable<Product> productQuery = _dbContext.Products
+            .Where(product => product.ProductId == productId && product.UserId == userId)
+            .Include(attribute => attribute.ProductAttributes)
+            .ThenInclude(variant => variant.ProductVariants);
 
-            serviceResponse.Data = new ProductResponseDto
+            if (!await productQuery.AnyAsync())
             {
-                ProductId = product.ProductId,
-                ProductName = product.ProductName,
-                Price = product.Price,
-                ProductMainImage = product.ProductMainImage,
-                Description = product.Description,
-                ProductImages = await _imageService.GetAllProductImagesPaths(product.ProductId)
-            };
-
-            if (product.ProductAttributes is not null && product.ProductAttributes.Count > 0)
-            {
-                serviceResponse.Data.ProductAttributesList = new List<AttributeResponseDto>();
-
-                foreach (var attribute in product.ProductAttributes)
-                {
-                    var attributeResponseDto = new AttributeResponseDto
-                    {
-                        AttributeId = attribute.AttributeId,
-                        AttributeName = attribute.AttributeName,
-                        ProductId = attribute.ProductId,
-                    };
-
-                    if (attribute.ProductVariants is not null && attribute.ProductVariants.Count > 0)
-                    {
-                        var productVariantResponseDto = new List<ProductVariantResponseDto>();
-
-                        foreach (var variant in attribute.ProductVariants)
-                        {
-                            productVariantResponseDto.Add(new ProductVariantResponseDto
-                            {
-                                VariantId = variant.VariantId,
-                                VariantName = variant.VariantName,
-                                VariantImages = variant.VariantImages,
-                                AttributeId = variant.AttributeId,
-                            });
-                        }
-
-                        attributeResponseDto.ProductVariantList = productVariantResponseDto;
-                    }
-
-                    serviceResponse.Data.ProductAttributesList.Add(attributeResponseDto);
-                }
+                serviceResponse.Message = CustomConstants.NotFound.Product;
+                return serviceResponse;
             }
+
+            var product = await productQuery.FirstOrDefaultAsync();
+
+            serviceResponse.Data = new ProductResponseDto(product);
+
+            serviceResponse.Data.ProductImages = await _imageService.GetAllProductImagesPaths(productId);
         }
         catch (Exception e)
         {
@@ -278,9 +167,7 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
         serviceResponse.Success = true;
 
         return serviceResponse;
-
     }
-
     public async Task<ServiceResponse<ProductResponseDto>> CreateProduct(CreateProductDto model, string userId)
     {
         ServiceResponse<ProductResponseDto> serviceResponse = new ServiceResponse<ProductResponseDto>();
@@ -289,30 +176,33 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
         try
         {
 
-            newProduct = new Product
-            {
-                ProductName = model.ProductName,
-                Price = model.Price,
-                UserId = userId,
-                Description = model.Description,
-                ProductAttributes = model.ProductAttributesList?.Select(attributeDto =>
-                    new ProductAttribute
-                    {
-                        AttributeName = attributeDto.AttributeName,
-                        ProductVariants = attributeDto.VariantsList?.Select(variantDto =>
-                            new ProductVariant
-                            {
-                                VariantName = variantDto.VariantName,
-                            }).ToList()
+            //newProduct = new Product
+            //{
+            //    ProductName = model.ProductName,
+            //    Price = model.Price,
+            //    UserId = userId,
+            //    Description = model.Description,
+            //    ProductAttributes = model.ProductAttributes?.Select(attributeDto =>
+            //        new ProductAttribute
+            //        {
+            //            AttributeName = attributeDto.AttributeName,
+            //            ProductVariants = attributeDto.ProductVariants?.Select(variantDto =>
+            //                new ProductVariant
+            //                {
+            //                    VariantName = variantDto.VariantName,
+            //                }).ToList()
 
-                    }).ToList()
+            //        }).ToList()
 
-            };
+            //};
+
+            newProduct = _mapper.Map<Product>(model);
+            newProduct.UserId = userId;
 
             _dbContext.Products.Add(newProduct);
             await _dbContext.SaveChangesAsync();
 
-            if (model.Images is not null && model.Images.Length > 0)
+            if (model is { Images: not null, Images.Length: > 0 })
             {
 
                 if (model.Images.Length > 5)
@@ -339,7 +229,6 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
         return await GetUserProductById(newProduct.ProductId, userId);
 
     }
-
     public async Task<ServiceResponse<ProductResponseDto>> UpdateProduct(UpdateProductDto model, string userId)
     {
         ServiceResponse<ProductResponseDto> serviceResponse = new ServiceResponse<ProductResponseDto>();
@@ -347,7 +236,7 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
         try
         {
             var product = await _dbContext.Products
-                .Where(product => product.UserId.Equals(userId) && product.ProductId.Equals(model.ProductId))
+                .Where(product => product.UserId == userId && product.ProductId == model.ProductId)
                 .Include(attribute => attribute.ProductAttributes)
                 .ThenInclude(variants => variants.ProductVariants)
                 .FirstOrDefaultAsync();
@@ -371,64 +260,7 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
                 }
             }
 
-
-            product.ProductMainImage = model.ProductMainImage;
-            product.ProductName = model.ProductName;
-            product.Price = model.Price;
-            product.Description = model.Description;
-
-            if (model.ProductAttributesList is not null && model.ProductAttributesList.Count > 0)
-            {
-                foreach (var attributeDto in model.ProductAttributesList)
-                {
-                    var attribute = product.ProductAttributes?.FirstOrDefault(attribute => attribute.AttributeId == attributeDto.AttributeId);
-
-                    if (attribute is not null && attribute.AttributeId > 0)
-                    {
-                        attribute.AttributeName = attributeDto.AttributeName;
-
-                        if (attributeDto.VariantsList is not null && attributeDto.VariantsList.Count > 0)
-                        {
-                            foreach (var variantDto in attributeDto.VariantsList)
-                            {
-                                var variant = attribute.ProductVariants?.FirstOrDefault(variant => variant.VariantId == variantDto.VariantId);
-
-                                if (variant is not null && variant.VariantId > 0)
-                                {
-                                    variant.VariantName = variantDto.VariantName;
-                                    //variant.VariantImages = variantDto.VariantImages;
-                                }
-                                else
-                                {
-                                    var newVariant = new ProductVariant
-                                    {
-                                        VariantName = variantDto.VariantName,
-                                        //VariantImages = variantDto.VariantImages
-                                    };
-
-                                    attribute.ProductVariants?.Add(newVariant);
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        var newAttribute = new ProductAttribute
-                        {
-                            AttributeName = attributeDto.AttributeName,
-                            ProductVariants = attributeDto.VariantsList?.Select(variantDto =>
-                                       new ProductVariant
-                                       {
-                                           VariantName = variantDto.VariantName,
-
-                                       }).ToList()
-                        };
-
-                        product.ProductAttributes?.Add(newAttribute);
-                    }
-                }
-
-            }
+            _mapper.Map(model, product);
 
             if (model.Images is not null && model.Images.Length > 0)
             {
@@ -441,6 +273,7 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
                 return serviceResponse;
             }
 
+            _dbContext.Products.Update(product);
             await _dbContext.SaveChangesAsync();
         }
         catch (Exception e)
@@ -450,21 +283,21 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
 
         return await GetUserProductById(model.ProductId, userId);
     }
-
     public async Task<ServiceResponse<ProductResponseDto>> DeleteProduct(int productId, string userId)
     {
         ServiceResponse<ProductResponseDto> serviceResponse = new ServiceResponse<ProductResponseDto>();
         try
         {
-            var product = await _dbContext.Products
-                             .Where(product => product.UserId.Equals(userId) && product.ProductId.Equals(productId))
-                             .FirstOrDefaultAsync();
+            IQueryable<Product> productQuery = _dbContext.Products
+                .Where(product => product.ProductId == productId && product.UserId == userId);
 
-            if (product is null)
+            if (!await productQuery.AnyAsync())
             {
                 serviceResponse.Message = CustomConstants.NotFound.Product;
                 return serviceResponse;
             }
+
+            var product = await productQuery.FirstOrDefaultAsync();
 
             await DeleteProductImages(productId);
 
@@ -492,7 +325,6 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
             _ => product => product.ProductId
         };
     }
-
     private async Task UploadProductImages(IFormFile[] images, int newProductId)
     {
 
@@ -504,7 +336,6 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
         }), newProductId);
 
     }
-
     private async Task DeleteProductImages(int productId)
     {
 
@@ -523,6 +354,4 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
             }
         }
     }
-
-
 }

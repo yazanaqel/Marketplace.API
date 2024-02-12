@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Marketplace.DAL.Dtos;
+namespace Marketplace.BAL.Dtos;
 public class ImageDto
 {
     public string Name { get; set; } = string.Empty;

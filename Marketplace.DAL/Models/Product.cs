@@ -2,11 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-
 namespace Marketplace.DAL.Models;
 public class Product
 {
@@ -20,10 +15,9 @@ public class Product
     public string? Description { get; set; }
 
 
-    [ForeignKey(nameof(UserId)),JsonIgnore]
+    [ForeignKey(nameof(UserId))]
     public virtual ApplicationUser User { get; set; }
     public string UserId { get; set; } = string.Empty;
-    [JsonIgnore]
     public virtual ICollection<ProductAttribute>? ProductAttributes { get; set; }
     public virtual ICollection<ProductImages>? ProductImages { get; set; }
 }

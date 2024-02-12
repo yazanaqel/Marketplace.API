@@ -1,5 +1,5 @@
 ﻿using Marketplace.BAL.Services;
-using Marketplace.DAL.Dtos.UserDtos;
+using Marketplace.BAL.Dtos.UserDtos;
 
 namespace Marketplace.API.Controllers;
 [Route("api/[controller]")]

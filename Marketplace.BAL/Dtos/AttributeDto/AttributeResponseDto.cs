@@ -1,10 +1,11 @@
-﻿using Marketplace.DAL.Dtos.ProductVariantDto;
+﻿using Marketplace.DAL.Models;
 
-namespace Marketplace.DAL.Dtos.AttributeDto;
-public class AttributeResponseDto
+namespace Marketplace.BAL.Dtos.AttributeDto;
+public class AttributeResponseDto(ProductAttribute productAttribute)
 {
-    public required int AttributeId { get; set; }
-    public required string AttributeName { get; set; }
-    public required int ProductId { get; set; }
+    public int AttributeId { get; set; } = productAttribute.AttributeId;
+    public string AttributeName { get; set; } = productAttribute.AttributeName;
+    public int ProductId { get; set; } = productAttribute.ProductId;
     public List<ProductVariantResponseDto>? ProductVariantList { get; set; }
+            = productAttribute.ProductVariants?.Select(variant => new ProductVariantResponseDto(variant)).ToList();
 }

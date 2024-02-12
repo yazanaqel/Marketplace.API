@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Marketplace.DAL.Dtos.UserDtos;
+namespace Marketplace.BAL.Dtos.UserDtos;
 public class UserResponseDto
 {
     public required string Email { get; set; } = string.Empty;

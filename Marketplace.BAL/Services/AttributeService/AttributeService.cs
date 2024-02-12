@@ -1,13 +1,15 @@
-﻿namespace Marketplace.BAL.Services.AttributeService;
+﻿using Marketplace.DAL.Models;
+
+namespace Marketplace.BAL.Services.AttributeService;
 public class AttributeService(ApplicationDbContext dbContext, IProductService productService) : IAttributeService
 {
     private readonly ApplicationDbContext _dbContext = dbContext;
     private readonly IProductService _productService = productService;
 
-    public async Task<ServiceResponse<List<ProductsResponseDto>>> DeleteAttribute(int attributeId, string userId)
+    public async Task<ServiceResponse<ProductResponseDto>> DeleteAttribute(int attributeId, string userId)
     {
-        ServiceResponse<List<ProductsResponseDto>> serviceResponse = new ServiceResponse<List<ProductsResponseDto>>();
-
+        ServiceResponse<ProductResponseDto> serviceResponse = new ServiceResponse<ProductResponseDto>();
+        int productId = 0;
         try
         {
             var attribute = await _dbContext.ProductAttributes
@@ -21,6 +23,8 @@ public class AttributeService(ApplicationDbContext dbContext, IProductService pr
                 return serviceResponse;
             }
 
+            productId = attribute.Product.ProductId;
+
             _dbContext.ProductAttributes.Remove(attribute);
 
             await dbContext.SaveChangesAsync();
@@ -31,7 +35,7 @@ public class AttributeService(ApplicationDbContext dbContext, IProductService pr
             Console.WriteLine(e.Message);
         }
 
-        return await _productService.GetAllUserProducts(userId, null, null, null, 1, 5);
+        return await _productService.GetUserProductById(productId, userId);
     }
 
 

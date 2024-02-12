@@ -10,11 +10,11 @@ public class ProductController(IProductService productService, IImageService ima
     private readonly IProductService _productService = productService;
 
     [HttpGet("GetAllUserProducts")]
-    public async Task<ActionResult<ServiceResponse<ProductResponseDto>>> GetAllUserProducts(string? sortColumn, string? sortOrder, string? searchItem, int page = 1, int pageSize = 5)
+    public async Task<ActionResult<ServiceResponse<ProductsResponseDto>>> GetAllUserProducts(string? sortColumn, string? sortOrder, string? searchItem, int page = 1, int pageSize = 5)
     {
         string? userId = GetUserId();
 
-        if (userId is null)
+        if (string.IsNullOrWhiteSpace(userId))
             return BadRequest(ModelState);
 
         var response = await _productService.GetAllUserProducts(userId, sortColumn, sortOrder, searchItem, page, pageSize);
@@ -31,7 +31,7 @@ public class ProductController(IProductService productService, IImageService ima
 
         string? userId = GetUserId();
 
-        if (userId is null)
+        if (string.IsNullOrWhiteSpace(userId))
             return BadRequest(ModelState);
 
         var response = await _productService.GetUserProductById(productId, userId);
@@ -43,17 +43,17 @@ public class ProductController(IProductService productService, IImageService ima
     }
 
     [HttpPost("CreateProduct")]
-    public async Task<ActionResult<ServiceResponse<ProductResponseDto>>> CreateProduct([FromForm] CreateProductDto model)
+    public async Task<ActionResult<ServiceResponse<ProductResponseDto>>> CreateProduct([FromBody] CreateProductDto model)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
         string? userId = GetUserId();
 
-        if (userId is null)
+        if (string.IsNullOrWhiteSpace(userId))
             return BadRequest(ModelState);
 
-        var response = await _productService.CreateProduct(model, userId);
+        var response = await _productService.CreateProduct(model,userId);
 
         if (response.Success)
             return Created(response.Message, response);
@@ -63,17 +63,17 @@ public class ProductController(IProductService productService, IImageService ima
 
 
     [HttpPut("UpdateProduct")]
-    public async Task<ActionResult<ServiceResponse<ProductResponseDto>>> UpdateProduct([FromForm] UpdateProductDto model)
+    public async Task<ActionResult<ServiceResponse<ProductResponseDto>>> UpdateProduct([FromBody] UpdateProductDto model)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
         string? userId = GetUserId();
 
-        if (userId is null)
+        if (string.IsNullOrWhiteSpace(userId))
             return BadRequest(ModelState);
 
-        var response = await _productService.UpdateProduct(model, userId);
+        var response = await _productService.UpdateProduct(model,userId);
 
         if (response.Success)
             return Ok(response);
@@ -85,14 +85,14 @@ public class ProductController(IProductService productService, IImageService ima
 
 
     [HttpDelete("DeleteProduct")]
-    public async Task<ActionResult<ServiceResponse<ProductResponseDto>>> DeleteProduct([Required] int productId)
+    public async Task<ActionResult<ServiceResponse<ProductsResponseDto>>> DeleteProduct([Required] int productId)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
         string? userId = GetUserId();
 
-        if (userId is null)
+        if (string.IsNullOrWhiteSpace(userId))
             return BadRequest(ModelState);
 
         var response = await _productService.DeleteProduct(productId, userId);

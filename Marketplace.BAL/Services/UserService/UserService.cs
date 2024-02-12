@@ -1,7 +1,7 @@
 ﻿using Marketplace.BAL.DbContext;
 using Marketplace.DAL;
-using Marketplace.DAL.Dtos.ProductDtos;
-using Marketplace.DAL.Dtos.UserDtos;
+using Marketplace.BAL.Dtos.ProductDtos;
+using Marketplace.BAL.Dtos.UserDtos;
 using Marketplace.DAL.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;

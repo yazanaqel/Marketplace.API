@@ -1,16 +1,16 @@
 ﻿global using Microsoft.EntityFrameworkCore;
 global using Marketplace.BAL.DbContext;
-global using Marketplace.DAL.Dtos.ProductDtos;
+global using Marketplace.BAL.Dtos.ProductDtos;
 global using Marketplace.BAL.Services.ProductService;
 global using Marketplace.DAL.Models;
 global using Microsoft.AspNetCore.Http;
 global using Marketplace.BAL.Services.ImageService;
-global using Marketplace.DAL.Dtos.AttributeDto;
-global using Marketplace.DAL.Dtos.ProductVariantDto;
+global using Marketplace.BAL.Dtos.AttributeDto;
+global using Marketplace.BAL.Dtos.ProductVariantDto;
 global using System.Linq.Expressions;
-global using Marketplace.DAL.Dtos;
+global using Marketplace.BAL.Dtos;
 global using Marketplace.BAL.Constants;
-
+global using AutoMapper;
 namespace Marketplace.BAL.Services;
 public class ServiceResponse<T>
 {

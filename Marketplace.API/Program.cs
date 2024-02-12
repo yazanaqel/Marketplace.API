@@ -4,7 +4,7 @@ global using Marketplace.DAL;
 global using System.ComponentModel.DataAnnotations;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Mvc;
-global using Marketplace.DAL.Dtos.ProductDtos;
+global using Marketplace.BAL.Dtos.ProductDtos;
 global using Marketplace.BAL.Services.ProductVariantService;
 global using Marketplace.BAL.Services.UserService;
 global using Marketplace.BAL.Services.ImageService;
@@ -17,6 +17,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
+using Marketplace.BAL.Maps;
+using Marketplace.API.Controllers;
 
 
 
@@ -80,6 +82,11 @@ builder.Services.AddSwaggerGen(c =>
     });
 
     c.OperationFilter<SecurityRequirementsOperationFilter>();
+});
+
+builder.Services.AddAutoMapper(options =>
+{
+    options.AddProfile<MappingProfile>();
 });
 
 builder.Services.AddScoped<IUserService, UserService>();

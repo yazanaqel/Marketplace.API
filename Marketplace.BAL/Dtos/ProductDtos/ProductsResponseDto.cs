@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Marketplace.DAL.Dtos.ProductDtos;
-public class ProductsResponseDto
+namespace Marketplace.BAL.Dtos.ProductDtos;
+public class ProductsResponseDto(Product product)
 {
-    public required int ProductId { get; set; }
-    public required string ProductName { get; set; }
-    public required decimal Price { get; set; }
-    public string? ProductMainImage { get; set; }
-    public string? Description { get; set; }
+    public int ProductId { get; set; } = product.ProductId;
+    public string ProductName { get; set; } = product.ProductName;
+    public decimal Price { get; set; } = product.Price;
+    public string? ProductMainImage { get; set; } = product.ProductMainImage;
+    public string? Description { get; set; } = product.Description;
 }

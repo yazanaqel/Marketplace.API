@@ -1,8 +1,4 @@
-﻿using Marketplace.DAL.Dtos.ProductDtos;
-using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
-using Marketplace.BAL.Services.ProductService;
-using Marketplace.BAL.Services;
+﻿using Marketplace.BAL.Services;
 
 namespace Marketplace.API.Controllers;
 
@@ -13,7 +9,7 @@ public class HomeController(IProductService productService) : Controller
     private readonly IProductService _productService = productService;
 
     [HttpGet("GetAllProducts")]
-    public async Task<ActionResult<ServiceResponse<ProductResponseDto>>> GetAllProducts(string? sortColumn, string? sortOrder, string? searchItem, int page = 1, int pageSize = 5)
+    public async Task<ActionResult<ServiceResponse<ProductsResponseDto>>> GetAllProducts(string? sortColumn, string? sortOrder, string? searchItem, int page = 1, int pageSize = 5)
     {
 
         var response = await _productService.GetAllProducts(sortColumn, sortOrder, searchItem, page, pageSize);

@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Marketplace.DAL.Dtos.ProductVariantDto;
-public class ProductVariantResponseDto
+namespace Marketplace.BAL.Dtos.ProductVariantDto;
+public class ProductVariantResponseDto(ProductVariant productVariant)
 {
-    public required int VariantId { get; set; }
-    public required string VariantName { get; set; }
-    public required int AttributeId { get; set; }
-    public string[]? VariantImages { get; set; }
+    public int VariantId { get; set; } = productVariant.VariantId;
+    public string VariantName { get; set; } = productVariant.VariantName;
+    public int AttributeId { get; set; } = productVariant.AttributeId;
+    public string[]? VariantImages { get; set; } = productVariant.VariantImages;
 }
