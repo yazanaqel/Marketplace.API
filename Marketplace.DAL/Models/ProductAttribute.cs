@@ -9,7 +9,7 @@ public class ProductAttribute
     public required string AttributeName { get; set; } = string.Empty;
 
     [ForeignKey(nameof(ProductId))]
-    public Product Product { get; set; } = new Product();
+    public Product Product { get; set; }
     public int ProductId { get; set; }
     public virtual ICollection<ProductVariant>? ProductVariants { get; set; }
 }

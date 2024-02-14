@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Marketplace.BAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240208170208_Images")]
-    partial class Images
+    [Migration("20240214190525_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -97,28 +97,6 @@ namespace Marketplace.BAL.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Marketplace.DAL.Models.Attribute", b =>
-                {
-                    b.Property<int>("AttributeId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AttributeId"));
-
-                    b.Property<string>("AttributeName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.HasKey("AttributeId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("ProductAttributes");
-                });
-
             modelBuilder.Entity("Marketplace.DAL.Models.Product", b =>
                 {
                     b.Property<int>("ProductId")
@@ -149,6 +127,28 @@ namespace Marketplace.BAL.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("Marketplace.DAL.Models.ProductAttribute", b =>
+                {
+                    b.Property<int>("AttributeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AttributeId"));
+
+                    b.Property<string>("AttributeName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("AttributeId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductAttributes");
                 });
 
             modelBuilder.Entity("Marketplace.DAL.Models.ProductImages", b =>
@@ -188,6 +188,9 @@ namespace Marketplace.BAL.Migrations
                     b.Property<string>("VariantName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("VariantPrice")
+                        .HasColumnType("int");
 
                     b.HasKey("VariantId");
 
@@ -329,17 +332,6 @@ namespace Marketplace.BAL.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Marketplace.DAL.Models.Attribute", b =>
-                {
-                    b.HasOne("Marketplace.DAL.Models.Product", "Product")
-                        .WithMany("ProductAttributes")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-                });
-
             modelBuilder.Entity("Marketplace.DAL.Models.Product", b =>
                 {
                     b.HasOne("Marketplace.DAL.Models.ApplicationUser", "User")
@@ -349,6 +341,17 @@ namespace Marketplace.BAL.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Marketplace.DAL.Models.ProductAttribute", b =>
+                {
+                    b.HasOne("Marketplace.DAL.Models.Product", "Product")
+                        .WithMany("ProductAttributes")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Marketplace.DAL.Models.ProductImages", b =>
@@ -364,7 +367,7 @@ namespace Marketplace.BAL.Migrations
 
             modelBuilder.Entity("Marketplace.DAL.Models.ProductVariant", b =>
                 {
-                    b.HasOne("Marketplace.DAL.Models.Attribute", "Attribute")
+                    b.HasOne("Marketplace.DAL.Models.ProductAttribute", "Attribute")
                         .WithMany("ProductVariants")
                         .HasForeignKey("AttributeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -424,16 +427,16 @@ namespace Marketplace.BAL.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Marketplace.DAL.Models.Attribute", b =>
-                {
-                    b.Navigation("ProductVariants");
-                });
-
             modelBuilder.Entity("Marketplace.DAL.Models.Product", b =>
                 {
                     b.Navigation("ProductAttributes");
 
                     b.Navigation("ProductImages");
+                });
+
+            modelBuilder.Entity("Marketplace.DAL.Models.ProductAttribute", b =>
+                {
+                    b.Navigation("ProductVariants");
                 });
 #pragma warning restore 612, 618
         }

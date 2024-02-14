@@ -11,13 +11,9 @@ public class HomeController(IProductService productService) : Controller
     [HttpGet("GetAllProducts")]
     public async Task<ActionResult<ServiceResponse<ProductsResponseDto>>> GetAllProducts(string? sortColumn, string? sortOrder, string? searchItem, int page = 1, int pageSize = 5)
     {
-
         var response = await _productService.GetAllProducts(sortColumn, sortOrder, searchItem, page, pageSize);
 
-        if (response.Success)
-            return Ok(response);
-
-        return NotFound(response.Message);
+        return response.Success ? Ok(response) : NotFound(response.Message);
     }
 
 
@@ -27,9 +23,6 @@ public class HomeController(IProductService productService) : Controller
 
         var response = await _productService.GetProductDetails(productId);
 
-        if (response.Success)
-            return Ok(response);
-
-        return NotFound(response.Message);
+        return response.Success ? Ok(response) : NotFound(response.Message);
     }
 }

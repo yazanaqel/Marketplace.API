@@ -1,5 +1,5 @@
 ﻿namespace Marketplace.BAL.Services.ProductVariantService;
 public interface IVariantService
 {
-    Task<ServiceResponse<ProductResponseDto>> DeleteVariant(int variantId, string userId);
+    Task <ServiceResponse<IReadOnlyList<ProductsResponseDto>>> DeleteVariant(int variantId, string userId);
 }

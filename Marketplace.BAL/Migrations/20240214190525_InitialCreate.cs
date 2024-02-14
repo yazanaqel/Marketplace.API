@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Marketplace.BAL.Migrations
 {
     /// <inheritdoc />
-    public partial class FullInitial : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -58,16 +58,13 @@ namespace Marketplace.BAL.Migrations
                 name: "ProductImages",
                 columns: table => new
                 {
-                    ImageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    OriginalFileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OriginalType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OriginalContent = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
-                    ThumbnailContent = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Folder = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ProductId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductImages", x => x.ImageId);
+                    table.PrimaryKey("PK_ProductImages", x => x.Id);
                     table.ForeignKey(
                         name: "FK_ProductImages_Products_ProductId",
                         column: x => x.ProductId,
@@ -83,6 +80,7 @@ namespace Marketplace.BAL.Migrations
                     VariantId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     VariantName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    VariantPrice = table.Column<int>(type: "int", nullable: false),
                     VariantImages = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AttributeId = table.Column<int>(type: "int", nullable: false)
                 },

@@ -2,7 +2,6 @@
 
 namespace Marketplace.API.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
 [Authorize]
 

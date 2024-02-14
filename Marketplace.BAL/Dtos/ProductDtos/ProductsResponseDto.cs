@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Marketplace.BAL.Dtos.ProductDtos;
+﻿namespace Marketplace.BAL.Dtos.ProductDtos;
 public class ProductsResponseDto(Product product)
 {
     public int ProductId { get; set; } = product.ProductId;

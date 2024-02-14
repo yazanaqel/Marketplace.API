@@ -6,6 +6,6 @@ public class AttributeResponseDto(ProductAttribute productAttribute)
     public int AttributeId { get; set; } = productAttribute.AttributeId;
     public string AttributeName { get; set; } = productAttribute.AttributeName;
     public int ProductId { get; set; } = productAttribute.ProductId;
-    public List<ProductVariantResponseDto>? ProductVariantList { get; set; }
+    public List<ProductVariantResponseDto>? ProductVariants { get; set; }
             = productAttribute.ProductVariants?.Select(variant => new ProductVariantResponseDto(variant)).ToList();
 }

@@ -64,6 +64,7 @@ public class UserService(UserManager<ApplicationUser> userManager, IOptions<Help
         }
 
         serviceResponse.Message = CustomConstants.User.UserCreated;
+        serviceResponse.StatusCode = StatusCodes.Status201Created;
         serviceResponse.Success = true;
 
         return serviceResponse;

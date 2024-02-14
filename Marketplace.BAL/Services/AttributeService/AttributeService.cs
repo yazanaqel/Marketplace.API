@@ -6,6 +6,61 @@ public class AttributeService(ApplicationDbContext dbContext, IProductService pr
     private readonly ApplicationDbContext _dbContext = dbContext;
     private readonly IProductService _productService = productService;
 
+
+    public async Task<ServiceResponse<ProductResponseDto>> CreateAttribute(CreateSingleAttributeDto model, string userId)
+    {
+        ServiceResponse<ProductResponseDto> serviceResponse = new ServiceResponse<ProductResponseDto>();
+
+        try
+        {
+            //var product = await _dbContext.Products.FindAsync(model.ProductId);
+
+
+            var product = await _dbContext.Products
+                        .Where(product => product.UserId.Equals(userId))
+                        .FirstOrDefaultAsync(x => x.ProductId.Equals(model.ProductId));
+
+            if (product is null || product.UserId != userId)
+            {
+                serviceResponse.Message = CustomConstants.NotFound.Product;
+                serviceResponse.StatusCode = StatusCodes.Status404NotFound;
+                return serviceResponse;
+            }
+
+            if (!string.IsNullOrWhiteSpace(model.AttributeName))
+            {
+                var newAttribute = new ProductAttribute
+                {
+                    ProductId = model.ProductId,
+                    AttributeName = model.AttributeName
+                };
+
+                if (model is { ProductVariants: not null, ProductVariants.Count: > 0 })
+                {
+                    newAttribute.ProductVariants = model.ProductVariants
+                    .Select(variant => new ProductVariant
+                    {
+                        VariantName = variant.VariantName,
+                        VariantPrice = variant.VariantPrice,
+                        AttributeId = newAttribute.AttributeId
+                    })
+                    .ToList();
+                }
+
+                await _dbContext.ProductAttributes.AddAsync(newAttribute);
+                await _dbContext.SaveChangesAsync();
+            }
+
+
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+
+        return await _productService.GetUserProductById(model.ProductId, userId);
+
+    }
     public async Task<ServiceResponse<ProductResponseDto>> DeleteAttribute(int attributeId, string userId)
     {
         ServiceResponse<ProductResponseDto> serviceResponse = new ServiceResponse<ProductResponseDto>();
@@ -14,12 +69,13 @@ public class AttributeService(ApplicationDbContext dbContext, IProductService pr
         {
             var attribute = await _dbContext.ProductAttributes
                 .Include(attribute => attribute.Product)
-                .Where(attribute => attribute.AttributeId == attributeId && attribute.Product.UserId == userId)
+                .Where(attribute => (attribute.AttributeId == attributeId) && (attribute.Product.UserId == userId))
                 .FirstOrDefaultAsync();
 
             if (attribute is null)
             {
                 serviceResponse.Message = CustomConstants.NotFound.Attribute;
+                serviceResponse.StatusCode = StatusCodes.Status404NotFound;
                 return serviceResponse;
             }
 

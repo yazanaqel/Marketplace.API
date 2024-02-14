@@ -186,6 +186,9 @@ namespace Marketplace.BAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("VariantPrice")
+                        .HasColumnType("int");
+
                     b.HasKey("VariantId");
 
                     b.HasIndex("AttributeId");

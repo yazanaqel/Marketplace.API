@@ -1,15 +1,16 @@
-global using Microsoft.EntityFrameworkCore;
-global using Marketplace.BAL.Services.AttributeService;
-global using Marketplace.DAL;
-global using System.ComponentModel.DataAnnotations;
-global using Microsoft.AspNetCore.Authorization;
-global using Microsoft.AspNetCore.Mvc;
 global using Marketplace.BAL.Dtos.ProductDtos;
-global using Marketplace.BAL.Services.ProductVariantService;
-global using Marketplace.BAL.Services.UserService;
+global using Marketplace.BAL.Services.AttributeService;
 global using Marketplace.BAL.Services.ImageService;
 global using Marketplace.BAL.Services.ProductService;
+global using Marketplace.BAL.Services.ProductVariantService;
+global using Marketplace.BAL.Services.UserService;
+global using Marketplace.DAL;
+global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.EntityFrameworkCore;
+global using System.ComponentModel.DataAnnotations;
 using Marketplace.BAL.DbContext;
+using Marketplace.BAL.Maps;
 using Marketplace.DAL.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -17,8 +18,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
-using Marketplace.BAL.Maps;
-using Marketplace.API.Controllers;
 
 
 

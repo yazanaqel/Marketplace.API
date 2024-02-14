@@ -9,6 +9,6 @@ public class ProductResponseDto(Product product)
     public string? ProductMainImage { get; set; } = product.ProductMainImage;
     public string? Description { get; set; } = product.Description;
     public List<string>? ProductImages { get; set; }
-    public List<AttributeResponseDto>? ProductAttributesList { get; set; }
+    public List<AttributeResponseDto>? ProductAttributes { get; set; }
         = product.ProductAttributes?.Select(attribute => new AttributeResponseDto(attribute)).ToList();
 }

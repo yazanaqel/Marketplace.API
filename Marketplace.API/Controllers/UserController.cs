@@ -16,10 +16,7 @@ public class UserController(IUserService userService) : ControllerBase
 
         var response = await _userService.RegisterAsync(model);
 
-        if (response.Success)
-            return Created(response.Message, response.Data);
-
-        return BadRequest(response.Message);
+        return response.Success ? Created(response.Message, response) : BadRequest(response.Message);
     }
 
     [HttpPost("Login")]
@@ -30,10 +27,7 @@ public class UserController(IUserService userService) : ControllerBase
 
         var response = await _userService.LoginAsync(model);
 
-        if (response.Success)
-            return Ok(response);
-
-        return NotFound(response.Message);
+        return response.Success ? Ok(response) : NotFound(response.Message);
     }
 
 

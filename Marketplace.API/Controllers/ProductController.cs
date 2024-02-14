@@ -19,16 +19,12 @@ public class ProductController(IProductService productService, IImageService ima
 
         var response = await _productService.GetAllUserProducts(userId, sortColumn, sortOrder, searchItem, page, pageSize);
 
-        if (response.Success)
-            return Ok(response);
-
-        return NotFound(response.Message);
+        return response.Success ? Ok(response) : NotFound(response.Message);
     }
 
     [HttpGet("GetUserProductById")]
     public async Task<ActionResult<ServiceResponse<ProductResponseDto>>> GetUserProductById([Required] int productId)
     {
-
         string? userId = GetUserId();
 
         if (string.IsNullOrWhiteSpace(userId))
@@ -36,10 +32,7 @@ public class ProductController(IProductService productService, IImageService ima
 
         var response = await _productService.GetUserProductById(productId, userId);
 
-        if (response.Success)
-            return Ok(response);
-
-        return NotFound(response.Message);
+        return response.Success ? Ok(response) : NotFound(response.Message);
     }
 
     [HttpPost("CreateProduct")]
@@ -55,10 +48,7 @@ public class ProductController(IProductService productService, IImageService ima
 
         var response = await _productService.CreateProduct(model,userId);
 
-        if (response.Success)
-            return Created(response.Message, response);
-
-        return BadRequest(response.Message);
+        return response.Success ? Created(response.Message, response) : BadRequest(response.Message);
     }
 
 
@@ -75,10 +65,7 @@ public class ProductController(IProductService productService, IImageService ima
 
         var response = await _productService.UpdateProduct(model,userId);
 
-        if (response.Success)
-            return Ok(response);
-
-        return NotFound(response.Message);
+        return response.Success ? Ok(response) : NotFound(response.Message);
     }
 
 
@@ -97,10 +84,7 @@ public class ProductController(IProductService productService, IImageService ima
 
         var response = await _productService.DeleteProduct(productId, userId);
 
-        if (response.Success)
-            return NoContent();
-
-        return NotFound(response.Message);
+        return response.Success ? NoContent() : NotFound(response.Message);
     }
 
 }

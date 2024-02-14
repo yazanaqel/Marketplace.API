@@ -22,9 +22,6 @@ public class VariantController(IVariantService variantService) : BaseController
 
         var response = await _variantService.DeleteVariant(attributeId, userId);
 
-        if (response.Success)
-            return Ok(response);
-
-        return BadRequest(response.Message);
+        return response.Success ? Ok(response) : BadRequest(response.Message);
     }
 }

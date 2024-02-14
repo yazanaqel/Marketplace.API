@@ -1,5 +1,5 @@
 ﻿using Marketplace.DAL.Models;
-using System.Linq;
+using System;
 
 namespace Marketplace.BAL.Services.ProductService;
 public class ProductService(ApplicationDbContext dbContext, IImageService imageService, IMapper mapper) : IProductService
@@ -19,6 +19,7 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
             if (!productsQuery.Any())
             {
                 serviceResponse.Message = CustomConstants.NotFound.NoProducts;
+                serviceResponse.StatusCode = StatusCodes.Status404NotFound;
                 return serviceResponse;
             }
 
@@ -39,6 +40,7 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
 
             var products = await productsQuery.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
+
             var productsList = products.ConvertAll(product => new ProductsResponseDto(product));
 
             serviceResponse.Data = productsList.AsReadOnly();
@@ -49,6 +51,7 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
         }
 
         serviceResponse.Message = CustomConstants.Operation.Successful;
+        serviceResponse.StatusCode = StatusCodes.Status200OK;
         serviceResponse.Success = true;
 
         return serviceResponse;
@@ -65,6 +68,7 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
             if (!await productsQuery.AnyAsync())
             {
                 serviceResponse.Message = CustomConstants.NotFound.NoProducts;
+                serviceResponse.StatusCode = StatusCodes.Status404NotFound;
                 return serviceResponse;
             }
 
@@ -97,6 +101,7 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
         }
 
         serviceResponse.Message = CustomConstants.Operation.Successful;
+        serviceResponse.StatusCode = StatusCodes.Status200OK;
         serviceResponse.Success = true;
 
         return serviceResponse;
@@ -108,18 +113,19 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
 
         try
         {
-            IQueryable<Product> productQuery = _dbContext.Products
+            var product = await _dbContext.Products
             .Where(product => product.ProductId == productId)
+            .AsSplitQuery()
             .Include(attribute => attribute.ProductAttributes)
-            .ThenInclude(variant => variant.ProductVariants);
+            .ThenInclude(variant => variant.ProductVariants)
+            .FirstOrDefaultAsync();
 
-            if (!await productQuery.AnyAsync())
+            if (product is null)
             {
                 serviceResponse.Message = CustomConstants.NotFound.Product;
+                serviceResponse.StatusCode = StatusCodes.Status404NotFound;
                 return serviceResponse;
             }
-
-            var product = await productQuery.FirstOrDefaultAsync();
 
             serviceResponse.Data = new ProductResponseDto(product);
 
@@ -131,6 +137,7 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
         }
 
         serviceResponse.Message = CustomConstants.Operation.Successful;
+        serviceResponse.StatusCode = StatusCodes.Status200OK;
         serviceResponse.Success = true;
 
         return serviceResponse;
@@ -141,18 +148,18 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
 
         try
         {
-            IQueryable<Product> productQuery = _dbContext.Products
-            .Where(product => product.ProductId == productId && product.UserId == userId)
-            .Include(attribute => attribute.ProductAttributes)
-            .ThenInclude(variant => variant.ProductVariants);
+            var product = await _dbContext.Products
+                            .Where(product => (product.ProductId == productId) && (product.UserId == userId))
+                            .Include(attribute => attribute.ProductAttributes)
+                            .ThenInclude(variant => variant.ProductVariants)
+                            .FirstOrDefaultAsync();
 
-            if (!await productQuery.AnyAsync())
+            if (product is null)
             {
                 serviceResponse.Message = CustomConstants.NotFound.Product;
+                serviceResponse.StatusCode = StatusCodes.Status404NotFound;
                 return serviceResponse;
             }
-
-            var product = await productQuery.FirstOrDefaultAsync();
 
             serviceResponse.Data = new ProductResponseDto(product);
 
@@ -164,6 +171,7 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
         }
 
         serviceResponse.Message = CustomConstants.Operation.Successful;
+        serviceResponse.StatusCode = StatusCodes.Status200OK;
         serviceResponse.Success = true;
 
         return serviceResponse;
@@ -175,27 +183,6 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
 
         try
         {
-
-            //newProduct = new Product
-            //{
-            //    ProductName = model.ProductName,
-            //    Price = model.Price,
-            //    UserId = userId,
-            //    Description = model.Description,
-            //    ProductAttributes = model.ProductAttributes?.Select(attributeDto =>
-            //        new ProductAttribute
-            //        {
-            //            AttributeName = attributeDto.AttributeName,
-            //            ProductVariants = attributeDto.ProductVariants?.Select(variantDto =>
-            //                new ProductVariant
-            //                {
-            //                    VariantName = variantDto.VariantName,
-            //                }).ToList()
-
-            //        }).ToList()
-
-            //};
-
             newProduct = _mapper.Map<Product>(model);
             newProduct.UserId = userId;
 
@@ -208,6 +195,7 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
                 if (model.Images.Length > 5)
                 {
                     serviceResponse.Message = CustomConstants.Error.ImagesLimit;
+                    serviceResponse.StatusCode = StatusCodes.Status403Forbidden;
                     return serviceResponse;
                 }
 
@@ -217,7 +205,6 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
 
                 newProduct.ProductMainImage = productImages.FirstOrDefault();
 
-                _dbContext.Products.Update(newProduct);
                 await _dbContext.SaveChangesAsync();
             }
         }
@@ -236,7 +223,7 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
         try
         {
             var product = await _dbContext.Products
-                .Where(product => product.UserId == userId && product.ProductId == model.ProductId)
+                .Where(product => (product.UserId == userId) && (product.ProductId == model.ProductId))
                 .Include(attribute => attribute.ProductAttributes)
                 .ThenInclude(variants => variants.ProductVariants)
                 .FirstOrDefaultAsync();
@@ -256,6 +243,7 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
                 if (!found)
                 {
                     serviceResponse.Message = CustomConstants.Error.NotExistImage;
+                    serviceResponse.StatusCode = StatusCodes.Status403Forbidden;
                     return serviceResponse;
                 }
             }
@@ -270,6 +258,7 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
                 }
 
                 serviceResponse.Message = CustomConstants.Error.ImagesLimit;
+                serviceResponse.StatusCode = StatusCodes.Status403Forbidden;
                 return serviceResponse;
             }
 
@@ -288,16 +277,15 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
         ServiceResponse<ProductResponseDto> serviceResponse = new ServiceResponse<ProductResponseDto>();
         try
         {
-            IQueryable<Product> productQuery = _dbContext.Products
-                .Where(product => product.ProductId == productId && product.UserId == userId);
 
-            if (!await productQuery.AnyAsync())
+            var product = await _dbContext.Products.FindAsync(productId);
+
+            if (product is null || product.UserId != userId)
             {
                 serviceResponse.Message = CustomConstants.NotFound.Product;
+                serviceResponse.StatusCode = StatusCodes.Status404NotFound;
                 return serviceResponse;
             }
-
-            var product = await productQuery.FirstOrDefaultAsync();
 
             await DeleteProductImages(productId);
 
@@ -313,6 +301,7 @@ public class ProductService(ApplicationDbContext dbContext, IImageService imageS
         }
 
         serviceResponse.Message = CustomConstants.Operation.Successful;
+        serviceResponse.StatusCode = StatusCodes.Status204NoContent;
         serviceResponse.Success = true;
         return serviceResponse;
     }
