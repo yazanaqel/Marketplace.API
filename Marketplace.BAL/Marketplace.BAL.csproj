@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.1" />
@@ -16,6 +17,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Marketplace.DAL\Marketplace.DAL.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="MediatR\Commands\" />
   </ItemGroup>
 
 </Project>

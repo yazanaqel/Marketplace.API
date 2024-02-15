@@ -12,6 +12,7 @@ global using System.ComponentModel.DataAnnotations;
 using Marketplace.BAL.DbContext;
 using Marketplace.BAL.Maps;
 using Marketplace.DAL.Models;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -44,6 +45,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(op =>
     op.ClaimsIdentity.UserIdClaimType = "UserId";
 })
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.AddMediatR(typeof(HelperJWT).Assembly);
 
 builder.Services.Configure<HelperJWT>(builder.Configuration.GetSection("JWT"));
 
