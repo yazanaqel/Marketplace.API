@@ -13,12 +13,7 @@ public class AttributeService(ApplicationDbContext dbContext, IProductService pr
 
         try
         {
-            //var product = await _dbContext.Products.FindAsync(model.ProductId);
-
-
-            var product = await _dbContext.Products
-                        .Where(product => product.UserId.Equals(userId))
-                        .FirstOrDefaultAsync(x => x.ProductId.Equals(model.ProductId));
+            var product = await _dbContext.Products.FindAsync(model.ProductId);
 
             if (product is null || product.UserId != userId)
             {
